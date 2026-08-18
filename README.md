@@ -3,7 +3,7 @@
 Enter a subreddit, fetch its 50 hot posts, and score every title's sentiment
 client-side to read the room.
 
-**Live demo:** [_(add your deployed URL here)_](https://subreddit-vibe-check-nu.vercel.app/)
+**Live demo:** [_(Link)_](https://subreddit-vibe-check-nu.vercel.app/)
 
 - 🟢 Positive / ⚪ Neutral / 🔴 Negative badge on every post
 - Summary statistics and a sentiment distribution chart

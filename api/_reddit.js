@@ -199,7 +199,25 @@ function parseAtom(xml, subreddit) {
 }
 
 const rssCache = new Map();
-const RSS_TTL_MS = 5 * 60 * 1000;
+
+// Hot posts turn over slowly, and the feed's rate limit is the binding
+// constraint here rather than freshness, so the window is generous.
+const RSS_TTL_MS = 30 * 60 * 1000;
+
+// Past the TTL a cached copy is still far better than an error page, so it is
+// kept and served if a refetch gets rate limited.
+const RSS_STALE_MS = 24 * 60 * 60 * 1000;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function requestFeed(subreddit, limit) {
+  return fetch(
+    `https://www.reddit.com/r/${encodeURIComponent(
+      subreddit
+    )}/hot.rss?limit=${limit}`,
+    { headers: { "User-Agent": USER_AGENT, Accept: "application/atom+xml" } }
+  );
+}
 
 async function fetchViaRss(subreddit, limit) {
   const cached = rssCache.get(subreddit);
@@ -208,18 +226,30 @@ async function fetchViaRss(subreddit, limit) {
     return cached.posts;
   }
 
-  const response = await fetch(
-    `https://www.reddit.com/r/${encodeURIComponent(
-      subreddit
-    )}/hot.rss?limit=${limit}`,
-    { headers: { "User-Agent": USER_AGENT, Accept: "application/atom+xml" } }
-  );
+  let response = await requestFeed(subreddit, limit);
 
-  if (!response.ok) return null;
+  // The feed's limit is short-lived — one backoff usually clears it.
+  if (response.status === 429) {
+    await sleep(1200);
+    response = await requestFeed(subreddit, limit);
+  }
+
+  if (!response.ok) {
+    // Rather an old listing than a broken page.
+    if (cached && Date.now() - cached.at < RSS_STALE_MS) {
+      return cached.posts;
+    }
+    return null;
+  }
 
   const posts = parseAtom(await response.text(), subreddit);
 
-  if (posts.length === 0) return null;
+  if (posts.length === 0) {
+    if (cached && Date.now() - cached.at < RSS_STALE_MS) {
+      return cached.posts;
+    }
+    return null;
+  }
 
   rssCache.set(subreddit, { at: Date.now(), posts });
 
@@ -297,8 +327,8 @@ export async function fetchHotPosts(rawSubreddit, limit = 50) {
   if (response.status === 403) {
     throw new RedditError(
       403,
-      "Reddit blocked this request and its feed is rate limited. Add Reddit " +
-        "API credentials — see the README."
+      "Reddit is rate limiting requests right now. Wait a few seconds and " +
+        "try again, or pick a different subreddit."
     );
   }
 

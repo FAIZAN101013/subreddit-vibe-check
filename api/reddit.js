@@ -12,10 +12,14 @@ export default async function handler(req, res) {
   try {
     const result = await fetchHotPosts(subreddit);
 
-    // Hot posts move slowly; a short edge cache keeps us under Reddit's limits.
+    // The edge cache does the heavy lifting: a serverless instance is recycled
+    // between requests, so its in-process cache often starts empty, while this
+    // is shared by every visitor. Once a subreddit has been fetched
+    // successfully, stale-while-revalidate keeps serving it instantly for a
+    // day rather than letting Reddit's feed rate limit produce an error page.
     res.setHeader(
       "Cache-Control",
-      "public, s-maxage=120, stale-while-revalidate=600"
+      "public, s-maxage=900, stale-while-revalidate=86400"
     );
 
     return res.status(200).json(result);

@@ -1,122 +1,90 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [subreddit, setSubreddit] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    console.log("Subreddit:", subreddit);
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      <header className="hero">
+        <p className="eyebrow">REDDIT SENTIMENT ANALYZER</p>
 
-      <div className="ticks"></div>
+        <h1>
+          The Subreddit
+          <span> Vibe Check</span>
+        </h1>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <p className="description">
+          Discover the mood of a subreddit by analyzing the sentiment
+          of its hottest posts.
+        </p>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        <form className="search-form" onSubmit={handleSubmit}>
+          <div className="input-wrapper">
+            <span className="reddit-prefix">r/</span>
+
+            <input
+              type="text"
+              placeholder="Enter a subreddit..."
+              value={subreddit}
+              onChange={(e) => setSubreddit(e.target.value)}
+            />
+          </div>
+
+          <button type="submit">
+            Check Vibe
+          </button>
+        </form>
+      </header>
+
+      <main>
+        <section className="stats">
+          <div className="stat-card">
+            <span className="stat-number">—</span>
+            <span className="stat-label">Posts Analyzed</span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-number positive">—</span>
+            <span className="stat-label">Positive</span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-number neutral">—</span>
+            <span className="stat-label">Neutral</span>
+          </div>
+
+          <div className="stat-card">
+            <span className="stat-number negative">—</span>
+            <span className="stat-label">Negative</span>
+          </div>
+        </section>
+
+        <section className="posts-section">
+          <div className="section-header">
+            <div>
+              <p className="section-label">HOT POSTS</p>
+              <h2>Latest subreddit activity</h2>
+            </div>
+          </div>
+
+          <div className="empty-state">
+            <div className="empty-icon">◎</div>
+            <h3>Choose a subreddit</h3>
+            <p>
+              Enter a subreddit above to analyze its top 50 hot posts.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;

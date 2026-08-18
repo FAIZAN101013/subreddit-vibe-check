@@ -1,0 +1,3 @@
+# Local development API only. Production uses api/reddit.js, which imports the
+# same api/_reddit.js logic, so nothing in here is needed at deploy time.
+server/

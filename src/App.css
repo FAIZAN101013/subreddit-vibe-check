@@ -678,3 +678,10 @@
     height: 34px;
   }
 }
+
+.retry-note {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.55;
+}

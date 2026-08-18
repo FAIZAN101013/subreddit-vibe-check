@@ -33,6 +33,7 @@ function App() {
   const [source, setSource] = useState(null);
   const [degraded, setDegraded] = useState(null);
   const [page, setPage] = useState(1);
+  const [retrying, setRetrying] = useState(null);
   const postsRef = useRef(null);
 
   const analyzedPosts = useMemo(
@@ -73,6 +74,7 @@ function App() {
     setPage(1);
     setSource(null);
     setDegraded(null);
+    setRetrying(null);
     setActiveSubreddit(name);
 
     try {
@@ -80,7 +82,9 @@ function App() {
         posts: fetched,
         source: usedSource,
         degraded: degradedNote,
-      } = await fetchHotPosts(name);
+      } = await fetchHotPosts(name, (attempt, of) =>
+        setRetrying({ attempt, of })
+      );
 
       setPosts(fetched);
       setSource(usedSource);
@@ -96,6 +100,7 @@ function App() {
       setPosts([]);
     } finally {
       setLoading(false);
+      setRetrying(null);
     }
   };
 
@@ -295,6 +300,12 @@ function App() {
 
           {loading && (
             <div className="posts-list">
+              {retrying && (
+                <p className="retry-note" role="status">
+                  Reddit is busy — retrying ({retrying.attempt} of {retrying.of})
+                </p>
+              )}
+
               {Array.from({ length: 5 }).map((_, index) => (
                 <div className="post-card skeleton" key={index}>
                   <div className="skeleton-line short" />

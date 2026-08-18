@@ -25,8 +25,13 @@ export default async function handler(req, res) {
     return res.status(200).json(result);
   } catch (error) {
     if (error instanceof RedditError) {
+      // Never cache a failure — the next attempt needs to reach a fresh
+      // instance rather than being handed this response from the edge.
+      res.setHeader("Cache-Control", "no-store");
+
       return res.status(error.status).json({
         error: error.message,
+        retryable: error.retryable,
         setupRequired: error.status === 403 && !credentialsReady,
       });
     }

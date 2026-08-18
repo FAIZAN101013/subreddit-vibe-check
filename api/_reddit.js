@@ -24,9 +24,14 @@ export const credentialsReady =
   !isPlaceholder(REDDIT_PASSWORD);
 
 export class RedditError extends Error {
-  constructor(status, message) {
+  // retryable marks the transient failures. Reddit's feed rate limit is applied
+  // per source IP, and each request to this endpoint may be served by a
+  // different serverless instance, so simply asking again often lands on an
+  // instance that is not currently limited.
+  constructor(status, message, retryable = false) {
     super(message);
     this.status = status;
+    this.retryable = retryable;
   }
 }
 
@@ -320,15 +325,16 @@ export async function fetchHotPosts(rawSubreddit, limit = 50) {
   if (response.status === 429) {
     throw new RedditError(
       429,
-      "Reddit is rate limiting us. Wait a moment and try again."
+      "Reddit is rate limiting requests right now.",
+      true
     );
   }
 
   if (response.status === 403) {
     throw new RedditError(
       403,
-      "Reddit is rate limiting requests right now. Wait a few seconds and " +
-        "try again, or pick a different subreddit."
+      "Reddit is rate limiting requests right now.",
+      true
     );
   }
 

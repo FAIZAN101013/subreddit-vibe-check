@@ -3,7 +3,7 @@
 Enter a subreddit, fetch its 50 hot posts, and score every title's sentiment
 client-side to read the room.
 
-**Live demo:** _(add your deployed URL here)_
+**Live demo:** [_(add your deployed URL here)_](https://subreddit-vibe-check-nu.vercel.app/)
 
 - 🟢 Positive / ⚪ Neutral / 🔴 Negative badge on every post
 - Summary statistics and a sentiment distribution chart
@@ -45,26 +45,17 @@ Sentiment analysis runs client-side on every tier, as specified.
 
 ## Setup
 
-### 1. Reddit API credentials (optional)
+### 1. Reddit API credentials (optional, and currently unavailable)
 
-The app works without these — it falls back to direct browser fetches. Set them
-so the proxy can serve visitors whose IP Reddit blocks.
+Tier 1 needs a `script` app from <https://www.reddit.com/prefs/apps>. Reddit now
+gates this behind a Data API access review, and **the application for this
+project was declined** under their Responsible Builder Policy — so the deployed
+app runs on tier 3.
 
-
-1. Sign in to your Reddit account and open <https://www.reddit.com/prefs/apps>
-2. **create another app...** and fill in:
-   - **name:** `vibe-check`
-   - **type:** **script** ← required; the password grant fails on other types
-   - **redirect uri:** `http://localhost:8080`
-3. On the created app, the **client id** is the unlabeled string directly under
-   the words *"personal use script"*; the **secret** is next to `secret`.
-
-> The account must have a **verified email** and **no 2FA** — app creation
-> requires the former, and the password grant can't complete the latter.
-
-### 2. Fill in `server/.env`
-
-Copy `server/.env.example` to `server/.env`:
+If you have approved credentials, drop them into `server/.env` (copy
+`server/.env.example`) or into your host's environment variables and the code
+prefers tier 1 automatically. Nothing else changes. That restores score and
+comment counts, and removes the rate limit entirely.
 
 ```
 REDDIT_CLIENT_ID=...
@@ -74,6 +65,18 @@ REDDIT_PASSWORD=...
 ```
 
 `server/.env` is gitignored — never commit it.
+
+### 2. Known limitation without credentials
+
+Reddit's Atom feed rate limits per source IP, and serverless functions run from
+a shared pool. In practice:
+
+- The six suggested subreddits load instantly — each successful response is
+  held at the edge for 24 hours via `stale-while-revalidate`.
+- A subreddit nobody has fetched recently may hit the rate limit. The client
+  retries up to four times, 1.8s apart; because each request can be served by a
+  different instance with its own limit, retrying often succeeds.
+- If it still fails, the message says so plainly and suggests trying another.
 
 ### 3. Run locally
 

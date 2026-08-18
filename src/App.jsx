@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import "./App.css";
 import { analyzeTitle, summarize, SENTIMENT_META } from "./sentiment";
 import { fetchHotPosts, VibeCheckError } from "./redditClient";
@@ -20,6 +20,9 @@ const OVERALL_COPY = {
 
 const LABELS = ["positive", "neutral", "negative"];
 
+// 50 posts in one column is a long scroll, so show them ten at a time.
+const PER_PAGE = 10;
+
 function App() {
   const [subreddit, setSubreddit] = useState("");
   const [activeSubreddit, setActiveSubreddit] = useState("");
@@ -29,6 +32,8 @@ function App() {
   const [filter, setFilter] = useState("all");
   const [source, setSource] = useState(null);
   const [degraded, setDegraded] = useState(null);
+  const [page, setPage] = useState(1);
+  const postsRef = useRef(null);
 
   const analyzedPosts = useMemo(
     () =>
@@ -49,6 +54,15 @@ function App() {
     [analyzedPosts, filter]
   );
 
+  const totalPages = Math.max(1, Math.ceil(visiblePosts.length / PER_PAGE));
+
+  // Filtering can shrink the list below the current page, so clamp rather than
+  // render an empty page.
+  const currentPage = Math.min(page, totalPages);
+  const firstOnPage = (currentPage - 1) * PER_PAGE;
+
+  const pagePosts = visiblePosts.slice(firstOnPage, firstOnPage + PER_PAGE);
+
   const runVibeCheck = async (rawName) => {
     const name = rawName.trim().replace(/^\/?r\//i, "");
 
@@ -56,6 +70,7 @@ function App() {
     setError(null);
     setPosts([]);
     setFilter("all");
+    setPage(1);
     setSource(null);
     setDegraded(null);
     setActiveSubreddit(name);
@@ -82,6 +97,13 @@ function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const goToPage = (next) => {
+    setPage(Math.min(Math.max(next, 1), totalPages));
+
+    // Otherwise page 2 opens halfway down the list you were already scrolled to.
+    postsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleSubmit = (event) => {
@@ -231,7 +253,7 @@ function App() {
           </section>
         )}
 
-        <section className="posts-section">
+        <section className="posts-section" ref={postsRef}>
           <div className="section-header">
             <div>
               <p className="section-label">HOT POSTS</p>
@@ -257,7 +279,10 @@ function App() {
                     key={option}
                     type="button"
                     className={`filter ${filter === option ? "active" : ""}`}
-                    onClick={() => setFilter(option)}
+                    onClick={() => {
+                      setFilter(option);
+                      setPage(1);
+                    }}
                   >
                     {option === "all"
                       ? `All ${stats.total}`
@@ -298,7 +323,7 @@ function App() {
 
           {!loading && visiblePosts.length > 0 && (
             <div className="posts-list">
-              {visiblePosts.map((post) => (
+              {pagePosts.map((post) => (
                 <article className="post-card" key={post.id}>
                   {post.score !== null && (
                     <div className="post-score">
@@ -349,6 +374,51 @@ function App() {
                 </article>
               ))}
             </div>
+          )}
+
+          {!loading && totalPages > 1 && (
+            <nav className="pager" aria-label="Post pages">
+              <button
+                type="button"
+                className="pager-step"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                ← Prev
+              </button>
+
+              <div className="pager-pages">
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+                  (number) => (
+                    <button
+                      key={number}
+                      type="button"
+                      className={`pager-page ${
+                        number === currentPage ? "active" : ""
+                      }`}
+                      onClick={() => goToPage(number)}
+                      aria-current={number === currentPage ? "page" : undefined}
+                    >
+                      {number}
+                    </button>
+                  )
+                )}
+              </div>
+
+              <button
+                type="button"
+                className="pager-step"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next →
+              </button>
+
+              <p className="pager-count">
+                {firstOnPage + 1}–{firstOnPage + pagePosts.length} of{" "}
+                {visiblePosts.length}
+              </p>
+            </nav>
           )}
         </section>
       </main>

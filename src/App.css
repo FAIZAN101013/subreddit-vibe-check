@@ -600,3 +600,81 @@
   font-size: 12px;
   opacity: 0.4;
 }
+
+/* --- pagination ---------------------------------------------------------- */
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 30px;
+}
+
+.pager-pages {
+  display: flex;
+  gap: 6px;
+}
+
+.pager-step,
+.pager-page {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: white;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.pager-step {
+  padding: 9px 15px;
+}
+
+.pager-page {
+  width: 38px;
+  height: 38px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pager-step:hover:not(:disabled),
+.pager-page:hover:not(.active) {
+  border-color: #111;
+}
+
+.pager-step:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pager-page.active {
+  background: #111;
+  border-color: #111;
+  color: white;
+}
+
+.pager-count {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.45;
+}
+
+@media (max-width: 700px) {
+  .pager-step {
+    padding: 9px 12px;
+    font-size: 12px;
+  }
+
+  .pager-page {
+    width: 34px;
+    height: 34px;
+  }
+}

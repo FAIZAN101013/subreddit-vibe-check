@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+server/.env
+
+# Secrets — never commit these
+.env
+.env.local
+.env*.local
+server/.env
+
+# Vercel
+.vercel

@@ -3,7 +3,11 @@
 Enter a subreddit, fetch its 50 hot posts, and score every title's sentiment
 client-side to read the room.
 
-**Live demo:** [_(Link)_](https://subreddit-vibe-check-nu.vercel.app/)
+**Live demo:** <https://subreddit-vibe-check-nu.vercel.app/>
+
+**[Engineering notes →](./ENGINEERING_NOTES.md)** — how Reddit blocked every
+documented endpoint, the test that disproved the obvious explanation, and why
+the architecture ended up with three fallback tiers.
 
 - 🟢 Positive / ⚪ Neutral / 🔴 Negative badge on every post
 - Summary statistics and a sentiment distribution chart
